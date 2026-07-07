@@ -82,7 +82,7 @@
 
         /* 2. CHAT PANELİ */
         .main-container {
-            display: none;
+            display: none; /* İlk başta gizli, login sonrası açılacak */
             width: 100%;
             height: 100vh;
             background-color: #000;
@@ -261,7 +261,6 @@
             border: 1px solid #333;
         }
 
-        /* Durum Belirteci Çizgisi */
         .avatar-wrapper {
             position: relative;
         }
@@ -306,7 +305,7 @@
 
     <div class="login-container" id="loginScreen">
         <h1>RowTeam</h1>
-        <input type="text" class="login-input" id="igUsernameInput" placeholder="Kullanıcı Adı (Örn: UMUT ESAT)">
+        <input type="text" class="login-input" id="igUsernameInput" placeholder="Kullanıcı Adı girin...">
         <button class="login-btn" onclick="loginToChat()">Giriş Yap</button>
     </div>
 
@@ -338,6 +337,7 @@
         let currentUser = "@anonim";
         let socket = null;
 
+        // DÜZELTME: Sayfa açıldığında kesin olarak ilk başta login ekranını gösteriyoruz
         window.onload = function() {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('chatScreen').style.display = 'none';
@@ -347,7 +347,6 @@
             let inputName = document.getElementById('igUsernameInput').value.trim();
             
             if (inputName !== "") {
-                // Eğer harfleri büyük girmemişlerse formatı temizlemek adına olduğu gibi alıyoruz
                 currentUser = inputName;
 
                 document.getElementById('loginScreen').style.display = 'none';
@@ -369,7 +368,7 @@
                 socket.emit('join', { user: currentUser });
             });
 
-            // MESAJ GEÇMİŞİ (F5 atıldığında veriler gitmez)
+            // MESAJ GEÇMİŞİ
             socket.on('history', function(messages) {
                 const chatMessages = document.getElementById('chatMessages');
                 chatMessages.innerHTML = ''; 
@@ -388,12 +387,11 @@
                 }
             });
 
-            // DISCORD GÖRÜNÜMLÜ YETKİLİ VE AKTİF ÜYE LİSTELEME
+            // DISCORD ROLLERİ VE AKTİF LİSTE
             socket.on('user_list', function(onlineUsers) {
                 const membersList = document.getElementById('membersList');
-                membersList.innerHTML = ''; // Temizle
+                membersList.innerHTML = ''; 
 
-                // Küçük/büyük harf uyumsuzluğu olmasın diye kontrol listesi
                 const onlineClean = onlineUsers.map(u => u.toUpperCase().replace('@','').trim());
 
                 // 1. OWNER KATEGORİSİ
@@ -436,8 +434,7 @@
                 `;
                 membersList.appendChild(devDiv);
 
-                // 3. AKTİF ÜYELER KATEGORİSİ (Diğer herkes)
-                // Kurucular dışındaki gerçek çevrimiçi listesini filtrele
+                // 3. AKTİF ÜYELER KATEGORİSİ
                 const normalUsers = onlineUsers.filter(u => {
                     const up = u.toUpperCase().replace('@','').trim();
                     return up !== "UMUT ESAT" && up !== "SİNTUV" && up !== "SINTUV";
