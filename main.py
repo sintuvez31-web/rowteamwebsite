@@ -1,31 +1,14 @@
-import eventlet
 import socketio
-import json
-import os
+import eventlet
+from pymongo import MongoClient
+
+# MongoDB Bağlantısı
+client = MongoClient("mongodb+srv://sintuvez31_db_user:W6jvjQPbm2GUU3b6@cluster0.m2fb3ty.mongodb.net/?appName=Cluster0")
+db = client['rowteam_db']
+collection = db['messages']
 
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio)
-
-# Mesajları kaydetmek için dosya ismi
-DB_FILE = 'mesajlar.json'
-
-# Eğer dosya yoksa boş bir liste oluştur
-if not os.path.exists(DB_FILE):
-    with open(DB_FILE, 'w') as f:
-        json.dump([], f)
-
-def load_messages():
-    with open(DB_FILE, 'r') as f:
-        return json.load(f)
-
-def save_message(data):
-    messages = load_messages()
-    messages.append(data)
-    # Sadece son 50 mesajı tutalım ki dosya şişmesin
-    if len(messages) > 50:
-        messages = messages[-50:]
-    with open(DB_FILE, 'w') as f:
-        json.dump(messages, f)
 
 active_users = []
 
@@ -38,14 +21,18 @@ def join(sid, data):
     user = data['user']
     active_users.append({'sid': sid, 'user': user})
     
-    # Yeni gelene geçmiş mesajları gönder
-    sio.emit('history', load_messages(), to=sid)
-    # Güncel kullanıcı listesini yayınla
+    # MongoDB'den son 50 mesajı çek ve gönder
+    history = list(collection.find().sort("_id", -1).limit(50))
+    for msg in history:
+        msg.pop('_id', None)
+    
+    sio.emit('history', history[::-1], to=sid)
     sio.emit('user_list', [u['user'] for u in active_users])
 
 @sio.on('message')
 def handle_message(sid, data):
-    save_message(data)
+    # MongoDB'ye kaydet
+    collection.insert_one(data)
     sio.emit('message', data)
 
 @sio.event
