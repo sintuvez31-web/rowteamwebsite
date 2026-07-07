@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spor Dünyası | Sağlıklı Yaşam ve Performans</title>
+    <style>
+        /* Genel Stiller */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navigasyon / Menü */
+        header {
+            background-color: #111;
+            color: #fff;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            width: 85%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Yarım Kalan Logo ve Menü Tasarımı */
+        .logo h1 {
+            font-size: 24px;
+            color: #ff4a57;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+        }
+
+        .nav-links li {
+            margin-left: 25px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ff4a57;
+        }
+
+        /* Ana Karşılama (Hero) Alanı */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #fff;
+            padding: 0 20px;
+        }
+
+        .hero-content h2 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-content p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #ff4a57;
+            color: #fff;
+            padding: 12px 35px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background 0.3s ease, transform 0.2s;
+        }
+
+        .btn:hover {
+            background: #e03d49;
+            transform: translateY(-2px);
+        }
+
+        /* Özellikler / Kartlar Bölümü */
+        .features {
+            width: 85%;
+            margin: 60px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <h1>Spor Dünyası</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">Anasayfa</a></li>
+                <li><a href="#">Programlar</a></li>
+                <li><a href="#">Beslenme</a></li>
+                <li><a href="#">İletişim</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Sınırlarını Zorla</h2>
+            <p>Sağlıklı bir yaşam, disiplinli antrenman ve doğru beslenme planlarıyla performansını zirveye taşı.</p>
+            <a href="#" class="btn">Hemen Başla</a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="card">
+            <h3>Kişiye Özel Program</h3>
+            <p>Sizin hedeflerinize ve vücut yapınıza en uygun antrenman planları.</p>
+        </div>
+        <div class="card">
+            <h3>Doğru Beslenme</h3>
+            <p>Performansınızı destekleyecek, sürdürülebilir ve sağlıklı diyet listeleri.</p>
+        </div>
+        <div class="card">
+            <h3>7/24 Destek</h3>
+            <p>Gelişiminizi takip ediyor, sorularınızı anında yanıtlıyoruz.</p>
+        </div>
+    </section>
+
+</body>
+</html>
