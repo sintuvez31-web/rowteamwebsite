@@ -246,12 +246,12 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            opacity: 0.35; /* Varsayılan Çevrimdışı karartması */
+            opacity: 0.35;
             transition: opacity 0.2s;
         }
 
         .member-item.online {
-            opacity: 1; /* Çevrimiçi olunca parlayacak */
+            opacity: 1;
         }
 
         .member-avatar {
@@ -260,6 +260,7 @@
             border-radius: 50%;
             background: #262626;
             border: 1px solid #333;
+            object-fit: cover;
         }
 
         .avatar-wrapper {
@@ -273,12 +274,12 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background-color: #747f8d; /* Çevrimdışı gri */
+            background-color: #747f8d;
             border: 2px solid #000;
         }
 
         .member-item.online .status-dot {
-            background-color: #3ba55d; /* Çevrimiçi yeşil */
+            background-color: #3ba55d;
         }
 
         .member-info {
@@ -291,9 +292,8 @@
             font-weight: 600;
         }
 
-        /* Özel Yetkili Renkleri */
-        .owner-style { color: #ed4245 !important; } /* Discord Kırmızısı */
-        .dev-style { color: #0095f6 !important; }   /* Discord Mavisi */
+        .owner-style { color: #ed4245 !important; }
+        .dev-style { color: #0095f6 !important; }
         .online-style { color: #fff !important; }
 
         .member-status-text {
@@ -329,17 +329,17 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL (Sürekli Sabit Kalan Bölüm) -->
+        <!-- SAĞ PANEL -->
         <div class="members-section">
             <div class="members-header">Üyeler</div>
             <div class="members-list" id="membersList">
                 
-                <!-- OWNER (Her zaman yüklü) -->
+                <!-- OWNER (ESAT KORKMAZ) -->
                 <div id="ownerGroup">
                     <div class="role-title" id="ownerTitle">Owner — 0</div>
                     <div class="member-item" id="ownerItem">
                         <div class="avatar-wrapper">
-                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=esatkorkmaz" class="member-avatar">
+                            <img src="owner.png" class="member-avatar" id="ownerAvatarImg">
                             <div class="status-dot"></div>
                         </div>
                         <div class="member-info">
@@ -349,12 +349,12 @@
                     </div>
                 </div>
 
-                <!-- DEVELOPER (Her zaman yüklü) -->
+                <!-- DEVELOPER (SİNTUV) -->
                 <div id="devGroup">
                     <div class="role-title" id="devTitle">Developer — 0</div>
                     <div class="member-item" id="devItem">
                         <div class="avatar-wrapper">
-                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=sintuv" class="member-avatar">
+                            <img src="dev.png" class="member-avatar" id="devAvatarImg">
                             <div class="status-dot"></div>
                         </div>
                         <div class="member-info">
@@ -364,7 +364,7 @@
                     </div>
                 </div>
 
-                <!-- AKTİF ÜYELER BAŞLIĞI VE LİSTESİ -->
+                <!-- AKTİF ÜYELER -->
                 <div>
                     <div class="role-title" id="activeTitle">Aktif Üyeler — 0</div>
                     <div id="dynamicNormalUsers"></div>
@@ -390,7 +390,6 @@
             if (inputName !== "") {
                 currentUser = inputName;
 
-                // Giriş yapınca isim etiketlerini (Sen) olarak güncelle
                 if(currentUser.toUpperCase() === "ESAT KORKMAZ") {
                     document.getElementById('ownerNameSpan').innerText = "ESAT KORKMAZ (Sen)";
                 }
@@ -417,7 +416,6 @@
                 socket.emit('join', { user: currentUser });
             });
 
-            // MESAJ GEÇMİŞİ
             socket.on('history', function(messages) {
                 const chatMessages = document.getElementById('chatMessages');
                 chatMessages.innerHTML = ''; 
@@ -436,11 +434,9 @@
                 }
             });
 
-            // SUNUCUDAN GELEN VERİYE GÖRE DURUM GÜNCELLEME
             socket.on('user_list', function(onlineUsers) {
                 const onlineClean = onlineUsers.map(u => u.toUpperCase().replace('@','').trim());
 
-                // 1. OWNER KONTROLÜ
                 const isOwnerOnline = onlineClean.includes("ESAT KORKMAZ") || onlineClean.includes("ESATKORKMAZ");
                 const ownerItem = document.getElementById('ownerItem');
                 if (isOwnerOnline) {
@@ -453,7 +449,6 @@
                     document.getElementById('ownerTitle').innerText = 'Owner — 0';
                 }
 
-                // 2. DEVELOPER KONTROLÜ
                 const isDevOnline = onlineClean.includes("SİNTUV") || onlineClean.includes("SINTUV");
                 const devItem = document.getElementById('devItem');
                 if (isDevOnline) {
@@ -466,9 +461,8 @@
                     document.getElementById('devTitle').innerText = 'Developer — 0';
                 }
 
-                // 3. DİNAMİK AKTİF ÜYELERİN LİSTELENMESİ
                 const dynamicArea = document.getElementById('dynamicNormalUsers');
-                dynamicArea.innerHTML = ''; // Eski normal üyeleri sil
+                dynamicArea.innerHTML = ''; 
 
                 const normalUsers = onlineUsers.filter(u => {
                     const up = u.toUpperCase().replace('@','').trim();
