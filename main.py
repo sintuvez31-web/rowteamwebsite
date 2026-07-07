@@ -1,51 +1,58 @@
+import eventlet
+import socketio
+import json
 import os
-from flask import Flask
-from flask_socketio import SocketIO, emit
 
-app = Flask(__name__)
-# CORS ayarlarıyla frontend bağlantılarına izin veriyoruz
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+sio = socketio.Server(cors_allowed_origins='*')
+app = socketio.WSGIApp(sio)
 
-# Sunucu açık olduğu sürece mesajları ve aktif kullanıcıları bellekte tutuyoruz
-messages_history = []
-active_users = {}  # {sid: username} şeklinde tutulacak
+# Mesajları kaydetmek için dosya ismi
+DB_FILE = 'mesajlar.json'
 
-@socketio.on('connect')
-def handle_connect():
-    print("Bir kullanıcı bağlandı.")
+# Eğer dosya yoksa boş bir liste oluştur
+if not os.path.exists(DB_FILE):
+    with open(DB_FILE, 'w') as f:
+        json.dump([], f)
 
-@socketio.on('join')
-def handle_join(data):
-    username = data.get('user', '@anonim')
-    # Kullanıcının socket ID'sini isme eşliyoruz
-    active_users[request.sid] = username
+def load_messages():
+    with open(DB_FILE, 'r') as f:
+        return json.load(f)
+
+def save_message(data):
+    messages = load_messages()
+    messages.append(data)
+    # Sadece son 50 mesajı tutalım ki dosya şişmesin
+    if len(messages) > 50:
+        messages = messages[-50:]
+    with open(DB_FILE, 'w') as f:
+        json.dump(messages, f)
+
+active_users = []
+
+@sio.event
+def connect(sid, environ):
+    print("Yeni bağlantı: ", sid)
+
+@sio.event
+def join(sid, data):
+    user = data['user']
+    active_users.append({'sid': sid, 'user': user})
     
-    # 1. Yeni giriş yapan kullanıcıya eski mesaj geçmişini gönder
-    emit('history', messages_history)
-    
-    # 2. Herkese güncel aktif kullanıcı listesini yayınla
-    emit('user_list', list(set(active_users.values())), broadcast=True)
+    # Yeni gelene geçmiş mesajları gönder
+    sio.emit('history', load_messages(), to=sid)
+    # Güncel kullanıcı listesini yayınla
+    sio.emit('user_list', [u['user'] for u in active_users])
 
-@socketio.on('message')
-def handle_message(data):
-    # Gelen mesajı geçmiş listesine ekle
-    messages_history.append(data)
-    # Eğer geçmiş çok şişmesin istersen son 50 mesajı tutabilirsin:
-    if len(messages_history) > 50:
-        messages_history.pop(0)
-        
-    # Mesajı gönderen dahil herkese dağıt (broadcast=True)
-    emit('message', data, broadcast=True)
+@sio.on('message')
+def handle_message(sid, data):
+    save_message(data)
+    sio.emit('message', data)
 
-@socketio.on('disconnect')
-def handle_disconnect():
-    # Kullanıcı sayfayı kapattığında veya F5 attığında listeden sil
-    if request.sid in active_users:
-        disconnected_user = active_users[request.sid]
-        del active_users[request.sid]
-        # Kalan aktif kullanıcı listesini herkese yeniden gönder
-        emit('user_list', list(set(active_users.values())), broadcast=True)
+@sio.event
+def disconnect(sid):
+    global active_users
+    active_users = [u for u in active_users if u['sid'] != sid]
+    sio.emit('user_list', [u['user'] for u in active_users])
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
