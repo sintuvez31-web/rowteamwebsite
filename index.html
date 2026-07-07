@@ -82,7 +82,7 @@
 
         /* 2. CHAT PANELİ */
         .main-container {
-            display: none; /* İlk başta gizli, login sonrası açılacak */
+            display: none; /* İlk başta gizli */
             width: 100%;
             height: 100vh;
             background-color: #000;
@@ -205,7 +205,7 @@
             padding-left: 15px;
         }
 
-        /* SAĞ PANEL: ÜYELER (DISCORD STYLE) */
+        /* SAĞ PANEL: DISCORD STYLE ÜYELER */
         .members-section {
             flex: 1;
             min-width: 260px;
@@ -245,12 +245,12 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            opacity: 0.4; /* Varsayılan çevrimdışı modu */
+            opacity: 0.35; /* Çevrimdışı karartması */
             transition: opacity 0.2s;
         }
 
         .member-item.online {
-            opacity: 1; /* Aktif olanlar parlayacak */
+            opacity: 1; /* Çevrimiçi olunca parlayacak */
         }
 
         .member-avatar {
@@ -277,7 +277,7 @@
         }
 
         .member-item.online .status-dot {
-            background-color: #3ba55d; /* Aktif yeşil */
+            background-color: #3ba55d; /* Çevrimiçi yeşil */
         }
 
         .member-info {
@@ -290,12 +290,12 @@
             font-weight: 600;
         }
 
-        /* Özel Rol Renkleri */
-        .owner-style { color: #ed4245 !important; } /* Kırmızı */
-        .dev-style { color: #0095f6 !important; }   /* Mavi */
-        .online-style { color: #fff !important; }    /* Beyaz */
+        /* Özel Yetkili Renkleri */
+        .owner-style { color: #ed4245 !important; } /* Discord Kırmızısı */
+        .dev-style { color: #0095f6 !important; }   /* Discord Mavisi */
+        .online-style { color: #fff !important; }
 
-        .member-ig {
+        .member-status-text {
             font-size: 11px;
             color: #a8a8a8;
         }
@@ -305,7 +305,7 @@
 
     <div class="login-container" id="loginScreen">
         <h1>RowTeam</h1>
-        <input type="text" class="login-input" id="igUsernameInput" placeholder="Kullanıcı Adı girin...">
+        <input type="text" class="login-input" id="igUsernameInput" placeholder="Kullanıcı adınızı yazın...">
         <button class="login-btn" onclick="loginToChat()">Giriş Yap</button>
     </div>
 
@@ -337,7 +337,7 @@
         let currentUser = "@anonim";
         let socket = null;
 
-        // DÜZELTME: Sayfa açıldığında kesin olarak ilk başta login ekranını gösteriyoruz
+        // İlk açılışta login ekranını zorla gösteriyoruz
         window.onload = function() {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('chatScreen').style.display = 'none';
@@ -387,34 +387,35 @@
                 }
             });
 
-            // DISCORD ROLLERİ VE AKTİF LİSTE
+            // SABİT + AKTİF DISCORD LİSTELEME MANTIĞI
             socket.on('user_list', function(onlineUsers) {
                 const membersList = document.getElementById('membersList');
-                membersList.innerHTML = ''; 
+                membersList.innerHTML = ''; // Paneli temizle ve sıfırdan inşa et
 
+                // Büyük/küçük harf duyarlılığını ortadan kaldırıyoruz
                 const onlineClean = onlineUsers.map(u => u.toUpperCase().replace('@','').trim());
 
-                // 1. OWNER KATEGORİSİ
-                const isOwnerOnline = onlineClean.includes("UMUT ESAT");
-                const ownerLabel = currentUser.toUpperCase() === "UMUT ESAT" ? "UMUT ESAT (Sen)" : "UMUT ESAT";
+                // 1. OWNER SÜREKLİ SABİT (ESAT KORKMAZ)
+                const isOwnerOnline = onlineClean.includes("ESAT KORKMAZ") || onlineClean.includes("ESATKORKMAZ");
+                const ownerLabel = currentUser.toUpperCase() === "ESAT KORKMAZ" ? "ESAT KORKMAZ (Sen)" : "ESAT KORKMAZ";
                 
                 const ownerDiv = document.createElement('div');
                 ownerDiv.innerHTML = `
                     <div class="role-title">Owner — ${isOwnerOnline ? 1 : 0}</div>
                     <div class="member-item ${isOwnerOnline ? 'online' : ''}">
                         <div class="avatar-wrapper">
-                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=umutesat" class="member-avatar">
+                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=esatkorkmaz" class="member-avatar">
                             <div class="status-dot"></div>
                         </div>
                         <div class="member-info">
                             <span class="member-name owner-style">${ownerLabel}</span>
-                            <span class="member-ig">${isOwnerOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+                            <span class="member-status-text">${isOwnerOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
                         </div>
                     </div>
                 `;
                 membersList.appendChild(ownerDiv);
 
-                // 2. DEVELOPER KATEGORİSİ
+                // 2. DEVELOPER SÜREKLİ SABİT (SİNTUV)
                 const isDevOnline = onlineClean.includes("SİNTUV") || onlineClean.includes("SINTUV");
                 const devLabel = (currentUser.toUpperCase() === "SİNTUV" || currentUser.toUpperCase() === "SINTUV") ? "SİNTUV (Sen)" : "SİNTUV";
 
@@ -428,16 +429,16 @@
                         </div>
                         <div class="member-info">
                             <span class="member-name dev-style">${devLabel}</span>
-                            <span class="member-ig">${isDevOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+                            <span class="member-status-text">${isDevOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
                         </div>
                     </div>
                 `;
                 membersList.appendChild(devDiv);
 
-                // 3. AKTİF ÜYELER KATEGORİSİ
+                // 3. AKTİF ÜYELER KATEGORİSİ (Sadece giren diğer normal kişiler)
                 const normalUsers = onlineUsers.filter(u => {
                     const up = u.toUpperCase().replace('@','').trim();
-                    return up !== "UMUT ESAT" && up !== "SİNTUV" && up !== "SINTUV";
+                    return up !== "ESAT KORKMAZ" && up !== "ESATKORKMAZ" && up !== "SİNTUV" && up !== "SINTUV";
                 });
 
                 const activeTitle = document.createElement('div');
@@ -445,6 +446,7 @@
                 activeTitle.innerText = `Aktif Üyeler — ${normalUsers.length}`;
                 membersList.appendChild(activeTitle);
 
+                // Diğer giren kullanıcıları listele
                 normalUsers.forEach(user => {
                     const isMe = (user === currentUser);
                     const displayName = isMe ? `${user} (Sen)` : user;
@@ -458,7 +460,7 @@
                         </div>
                         <div class="member-info">
                             <span class="member-name online-style">${displayName}</span>
-                            <span class="member-ig">Çevrimiçi</span>
+                            <span class="member-status-text">Çevrimiçi</span>
                         </div>
                     `;
                     membersList.appendChild(userRow);
