@@ -82,7 +82,7 @@
 
         /* 2. CHAT PANELİ */
         .main-container {
-            display: none;
+            display: none; /* JS ile görünür yapıyoruz */
             width: 100%;
             height: 100vh;
             background-color: #000;
@@ -153,4 +153,261 @@
 
         .bubble {
             padding: 12px 18px;
-            border
+            border-radius: 20px;
+            font-size: 14px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .incoming .bubble {
+            background-color: #262626;
+            color: #fff;
+        }
+
+        .outgoing .bubble {
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+            color: #fff;
+        }
+
+        /* Yazma Alanı */
+        .chat-input-area {
+            padding: 20px;
+            background-color: #000;
+            border-top: 1px solid #262626;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #000;
+            border: 1px solid #262626;
+            border-radius: 24px;
+            padding: 8px 20px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            padding: 8px 0;
+        }
+
+        .input-wrapper button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding-left: 15px;
+        }
+
+        /* SAĞ PANEL: ÜYELER */
+        .members-section {
+            flex: 1;
+            min-width: 260px;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .members-header {
+            padding: 20px;
+            border-bottom: 1px solid #262626;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .members-list {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #262626;
+            border: 1px solid #333;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .member-ig {
+            font-size: 12px;
+            color: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container" id="loginScreen">
+        <h1>RowTeam</h1>
+        <input type="text" class="login-input" id="igUsernameInput" placeholder="Instagram Kullanıcı Adı (Örn: @kullanici)">
+        <button class="login-btn" onclick="loginToChat()">Giriş Yap</button>
+    </div>
+
+    <div class="main-container" id="chatScreen">
+        
+        <div class="chat-section">
+            <div class="chat-header">
+                <h2>RowTeam 💬</h2>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Mesaj yaz...">
+                    <button onclick="sendMessage()">Gönder</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="members-section">
+            <div class="members-header">Üyeler</div>
+            <div class="members-list" id="membersList"></div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentUser = "@anonim";
+        let socket = null;
+
+        // Sayfa yüklendiğinde giriş ekranını aç (Düzeltme: JS hatasını engellemek için)
+        window.onload = function() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('chatScreen').style.display = 'none';
+        };
+
+        // Giriş Yapma Mantığı
+        function loginToChat() {
+            let inputName = document.getElementById('igUsernameInput').value.trim();
+            
+            if (inputName !== "") {
+                if(!inputName.startsWith('@')) {
+                    inputName = '@' + inputName;
+                }
+                currentUser = inputName;
+
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.title = "RowTeam | Chat";
+
+                // Sağdaki listeye kendini ekle
+                const membersList = document.getElementById('membersList');
+                const userRow = document.createElement('div');
+                userRow.className = 'member-item';
+                userRow.innerHTML = `
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser}" class="member-avatar">
+                    <div class="member-info">
+                        <span class="member-name">Sen</span>
+                        <span class="member-ig">${currentUser}</span>
+                    </div>
+                `;
+                membersList.appendChild(userRow);
+
+                // Sunucu bağlantısını başlat
+                initSocket();
+            } else {
+                alert("Lütfen geçerli bir Instagram kullanıcı adı girin!");
+            }
+        }
+
+        // Realtime WebSocket Sunucu Bağlantısı
+        function initSocket() {
+            // Render backend bağlantı ayarları (Kararlı WebSocket için transports eklendi)
+            socket = io("https://rowteamwebsite-2.onrender.com", {
+                transports: ['websocket', 'polling'],
+                upgrade: true
+            }); 
+
+            socket.on('connect', () => {
+                console.log('Sunucuya bağlanıldı!');
+            });
+
+            // Başka birinden mesaj gelirse ekrana bas
+            socket.on('message', function(data) {
+                if (data.user !== currentUser) {
+                    showIncomingMessage(data.user, data.msg);
+                }
+            });
+        }
+
+        // Mesaj Gönderme Mantığı
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageText = input.value.trim();
+            
+            if (messageText !== "" && socket) {
+                // Sunucuya fırlat
+                socket.send({ user: currentUser, msg: messageText });
+
+                // Kendi ekranımıza bas
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message outgoing';
+                
+                messageDiv.innerHTML = `
+                    <div class="msg-content">
+                        <span class="username">${currentUser}</span>
+                        <div class="bubble">${messageText}</div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                input.value = "";
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Karşı Taraftan Gelen Mesajı Gösterme
+        function showIncomingMessage(user, msg) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message incoming';
+            
+            messageDiv.innerHTML = `
+                <div class="msg-content">
+                    <span class="username">${user}</span>
+                    <div class="bubble">${msg}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Enter Tuşu Dinleyicileri
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { sendMessage(); }
+        });
+        document.getElementById('igUsernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { loginToChat(); }
+        });
+    </script>
+</body>
+</html>
