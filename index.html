@@ -82,7 +82,7 @@
 
         /* 2. CHAT PANELİ */
         .main-container {
-            display: none; /* JS ile görünür yapıyoruz */
+            display: none;
             width: 100%;
             height: 100vh;
             background-color: #000;
@@ -287,7 +287,7 @@
         </div>
 
         <div class="members-section">
-            <div class="members-header">Üyeler</div>
+            <div class="members-header">Aktif Üyeler</div>
             <div class="members-list" id="membersList"></div>
         </div>
 
@@ -297,13 +297,11 @@
         let currentUser = "@anonim";
         let socket = null;
 
-        // Sayfa yüklendiğinde giriş ekranını aç (Düzeltme: JS hatasını engellemek için)
         window.onload = function() {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('chatScreen').style.display = 'none';
         };
 
-        // Giriş Yapma Mantığı
         function loginToChat() {
             let inputName = document.getElementById('igUsernameInput').value.trim();
             
@@ -317,91 +315,107 @@
                 document.getElementById('chatScreen').style.display = 'flex';
                 document.title = "RowTeam | Chat";
 
-                // Sağdaki listeye kendini ekle
-                const membersList = document.getElementById('membersList');
-                const userRow = document.createElement('div');
-                userRow.className = 'member-item';
-                userRow.innerHTML = `
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser}" class="member-avatar">
-                    <div class="member-info">
-                        <span class="member-name">Sen</span>
-                        <span class="member-ig">${currentUser}</span>
-                    </div>
-                `;
-                membersList.appendChild(userRow);
-
-                // Sunucu bağlantısını başlat
                 initSocket();
             } else {
                 alert("Lütfen geçerli bir Instagram kullanıcı adı girin!");
             }
         }
 
-        // Realtime WebSocket Sunucu Bağlantısı
         function initSocket() {
-            // Render backend bağlantı ayarları (Kararlı WebSocket için transports eklendi)
             socket = io("https://rowteamwebsite-2.onrender.com", {
-                transports: ['websocket', 'polling'],
-                upgrade: true
+                transports: ['websocket', 'polling']
             }); 
 
             socket.on('connect', () => {
-                console.log('Sunucuya bağlanıldı!');
+                // Sunucuya odaya katıldığımızı ve ismimizi bildiriyoruz
+                socket.emit('join', { user: currentUser });
             });
 
-            // Başka birinden mesaj gelirse ekrana bas
+            // SUNUCUDAN GEÇMİŞ MESAJLARI ALMA (F5 atıldığında burası tetiklenir)
+            socket.on('history', function(messages) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = ''; // Temizle
+                messages.forEach(data => {
+                    if (data.user === currentUser) {
+                        showLocalMessage(data.msg);
+                    } else {
+                        showIncomingMessage(data.user, data.msg);
+                    }
+                });
+            });
+
+            // ANLIK YENİ MESAJ ALMA
             socket.on('message', function(data) {
+                // Eğer mesajı başkası gönderdiyse ekrana bas (Biz zaten basıyoruz)
                 if (data.user !== currentUser) {
                     showIncomingMessage(data.user, data.msg);
                 }
             });
+
+            // AKTİF ÜYE LİSTESİNİ GÜNCELLEME
+            socket.on('user_list', function(users) {
+                const membersList = document.getElementById('membersList');
+                membersList.innerHTML = ''; // Listeyi sıfırla yeniden doldur
+
+                users.forEach(user => {
+                    const isMe = (user === currentUser);
+                    const displayName = isMe ? "Sen" : user;
+                    
+                    const userRow = document.createElement('div');
+                    userRow.className = 'member-item';
+                    userRow.innerHTML = `
+                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}" class="member-avatar">
+                        <div class="member-info">
+                            <span class="member-name">${displayName}</span>
+                            <span class="member-ig">${user}</span>
+                        </div>
+                    `;
+                    membersList.appendChild(userRow);
+                });
+            });
         }
 
-        // Mesaj Gönderme Mantığı
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const messageText = input.value.trim();
             
             if (messageText !== "" && socket) {
-                // Sunucuya fırlat
                 socket.send({ user: currentUser, msg: messageText });
-
-                // Kendi ekranımıza bas
-                const chatMessages = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message outgoing';
-                
-                messageDiv.innerHTML = `
-                    <div class="msg-content">
-                        <span class="username">${currentUser}</span>
-                        <div class="bubble">${messageText}</div>
-                    </div>
-                `;
-                
-                chatMessages.appendChild(messageDiv);
+                showLocalMessage(messageText);
                 input.value = "";
-                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
 
-        // Karşı Taraftan Gelen Mesajı Gösterme
+        // Kendi attığımız mesajı ekrana basma fonksiyonu
+        function showLocalMessage(msg) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message outgoing';
+            messageDiv.innerHTML = `
+                <div class="msg-content">
+                    <span class="username">${currentUser}</span>
+                    <div class="bubble">${msg}</div>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Başkasından gelen mesajı ekrana basma fonksiyonu
         function showIncomingMessage(user, msg) {
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message incoming';
-            
             messageDiv.innerHTML = `
                 <div class="msg-content">
                     <span class="username">${user}</span>
                     <div class="bubble">${msg}</div>
                 </div>
             `;
-            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Enter Tuşu Dinleyicileri
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') { sendMessage(); }
         });
