@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grup Chat | Instagram DM</title>
+    <title>RowTeam | Giriş Yap</title>
     <style>
         * {
             margin: 0;
@@ -22,16 +22,67 @@
             overflow: hidden;
         }
 
-        /* Ana Panel */
-        .container {
+        /* LÖGİN EKRANI */
+        .login-container {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #000;
+            border: 1px solid #262626;
+            padding: 40px;
+            width: 350px;
+            border-radius: 4px;
+        }
+
+        .login-container h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-input {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #262626;
+            padding: 12px;
+            border-radius: 4px;
+            color: #fff;
+            margin-bottom: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .login-input:focus {
+            border-color: #a8a8a8;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .login-btn:hover {
+            background-color: #1877f2;
+        }
+
+        /* CHAT PANELİ (İLK BAŞTA GİZLİ) */
+        .main-container {
+            display: none; /* Giriş yapılınca 'flex' olacak */
             width: 100%;
             height: 100vh;
             background-color: #000;
-            border: 1px solid #262626;
         }
 
-        /* SOL / ORTA: CHAT ALANI */
         .chat-section {
             flex: 3;
             display: flex;
@@ -40,7 +91,6 @@
             height: 100%;
         }
 
-        /* Üst Bar (Grup Adı) */
         .chat-header {
             padding: 15px 20px;
             border-bottom: 1px solid #262626;
@@ -49,11 +99,11 @@
         }
 
         .chat-header h2 {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        /* Mesajların Listelendiği Yer */
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -63,7 +113,7 @@
             gap: 15px;
         }
 
-        /* Mesaj Yapısı */
+        /* Mesaj Tasarımları */
         .message {
             display: flex;
             align-items: flex-start;
@@ -85,7 +135,6 @@
             height: 28px;
             border-radius: 50%;
             background: #333;
-            object-fit: cover;
         }
 
         .msg-content {
@@ -122,7 +171,7 @@
             color: #fff;
         }
 
-        /* Mesaj Yazma Alanı */
+        /* Mesaj Yazma Kutusu */
         .chat-input-area {
             padding: 20px;
             background-color: #000;
@@ -157,11 +206,7 @@
             padding-left: 10px;
         }
 
-        .input-wrapper button:hover {
-            color: #fff;
-        }
-
-        /* SAĞ TARAF: ÜYELER LİSTESİ */
+        /* SAĞ ÜYELER PANELİ */
         .members-section {
             flex: 1;
             min-width: 250px;
@@ -197,8 +242,6 @@
             height: 36px;
             border-radius: 50%;
             background: #333;
-            object-fit: cover;
-            border: 1px solid #262626;
         }
 
         .member-info {
@@ -220,37 +263,29 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="login-container" id="loginScreen">
+        <h1>Instagram</h1>
+        <input type="text" class="login-input" id="igUsernameInput" placeholder="Instagram Kullanıcı Adı (Örn: @kullanici)">
+        <button class="login-btn" onclick="loginToChat()">Giriş Yap</button>
+    </div>
+
+    <div class="main-container" id="chatScreen">
         
-        <!-- ORTA: CHAT BÖLÜMÜ -->
         <div class="chat-section">
             <div class="chat-header">
-                <h2>Row Team Instagram Grubu 💬</h2>
+                <h2>RowTeam 💬</h2>
             </div>
             
-            <!-- Mesaj Alanı -->
             <div class="chat-messages" id="chatMessages">
-                
-                <!-- Örnek Gelen Mesaj -->
                 <div class="message incoming">
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="msg-avatar" alt="avatar">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="msg-avatar">
                     <div class="msg-content">
                         <span class="username">@ahmet_arslan</span>
-                        <div class="bubble">Selam beyler, akşam r0w team maçı var mı?</div>
+                        <div class="bubble">Selam beyler, site hayırlı olsun!</div>
                     </div>
                 </div>
-
-                <!-- Örnek Giden Mesaj -->
-                <div class="message outgoing">
-                    <div class="msg-content">
-                        <span class="username">@senin_adin</span>
-                        <div class="bubble">Aynen kanka, 20:00 gibi herkesi Discord'a bekliyorum.</div>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- Mesaj Gönderme Girdisi -->
             <div class="chat-input-area">
                 <div class="input-wrapper">
                     <input type="text" id="messageInput" placeholder="Mesaj yaz...">
@@ -259,83 +294,87 @@
             </div>
         </div>
 
-        <!-- SAĞ: ÜYELER BÖLÜMÜ -->
         <div class="members-section">
-            <div class="members-header">Üyeler (4)</div>
-            <div class="members-list">
+            <div class="members-header">Üyeler</div>
+            <div class="members-list" id="membersList">
                 
-                <!-- Üye 1 -->
                 <div class="member-item">
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="member-avatar" alt="profil">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="member-avatar">
                     <div class="member-info">
                         <span class="member-name">Ahmet Arslan</span>
                         <span class="member-ig">@ahmet_arslan</span>
                     </div>
                 </div>
 
-                <!-- Üye 2 -->
-                <div class="member-item">
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ece" class="member-avatar" alt="profil">
-                    <div class="member-info">
-                        <span class="member-name">Ece Yılmaz</span>
-                        <span class="member-ig">@ece_ylmzz</span>
-                    </div>
                 </div>
-
-                <!-- Üye 3 -->
-                <div class="member-item">
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Kaan" class="member-avatar" alt="profil">
-                    <div class="member-info">
-                        <span class="member-name">Kaan Demir</span>
-                        <span class="member-ig">@kaandmr_</span>
-                    </div>
-                </div>
-
-                <!-- Üye 4 (Sen) -->
-                <div class="member-item">
-                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Sen" class="member-avatar" alt="profil">
-                    <div class="member-info">
-                        <span class="member-name">Sen</span>
-                        <span class="member-ig">@senin_adin</span>
-                    </div>
-                </div>
-
-            </div>
         </div>
 
     </div>
 
-    <!-- Mesaj Gönderme Mekanizması -->
     <script>
+        let currentUser = "@anonim";
+
+        // Giriş Yapma Fonksiyonu
+        function loginToChat() {
+            let inputName = document.getElementById('igUsernameInput').value.trim();
+            if (inputName !== "") {
+                // Eğer başına @ koymadıysa biz ekleyelim
+                if(!inputName.startsWith('@')) {
+                    inputName = '@' + inputName;
+                }
+                currentUser = inputName;
+
+                // Giriş ekranını gizle, chat ekranını aç
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.title = "RowTeam | Chat";
+
+                // Giriş yapan kişiyi sağdaki üye listesine ekle
+                const membersList = document.getElementById('membersList');
+                const userRow = document.createElement('div');
+                userRow.className = 'member-item';
+                userRow.innerHTML = `
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser}" class="member-avatar">
+                    <div class="member-info">
+                        <span class="member-name">Sen</span>
+                        <span class="member-ig">${currentUser}</span>
+                    </div>
+                `;
+                membersList.appendChild(userRow);
+            } else {
+                alert("Lütfen Instagram kullanıcı adınızı yazın!");
+            }
+        }
+
+        // Mesaj Gönderme Fonksiyonu
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const messageText = input.value.trim();
             
             if (messageText !== "") {
                 const chatMessages = document.getElementById('chatMessages');
-                
-                // Yeni mesaj elementi oluştur
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message outgoing';
                 
                 messageDiv.innerHTML = `
                     <div class="msg-content">
-                        <span class="username">@senin_adin</span>
+                        <span class="username">${currentUser}</span>
                         <div class="bubble">${messageText}</div>
                     </div>
                 `;
                 
                 chatMessages.appendChild(messageDiv);
-                input.value = ""; // Kutuyu temizle
-                chatMessages.scrollTop = chatMessages.scrollHeight; // Ekranı aşağı kaydır
+                input.value = "";
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
 
-        // Enter tuşuna basınca da göndersin
+        // Enter ile gönderme tetikleyicisi
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') { sendMessage(); }
+        });
+        document.getElementById('igUsernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { loginToChat(); }
         });
     </script>
 </body>
