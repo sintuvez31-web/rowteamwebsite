@@ -205,7 +205,7 @@
             padding-left: 15px;
         }
 
-        /* SAĞ PANEL: ÜYELER */
+        /* SAĞ PANEL: ÜYELER (DISCORD STYLE) */
         .members-section {
             flex: 1;
             min-width: 260px;
@@ -230,18 +230,55 @@
             gap: 15px;
         }
 
+        /* Rol Başlıkları */
+        .role-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: #8e9297;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
         .member-item {
             display: flex;
             align-items: center;
             gap: 12px;
+            opacity: 0.4; /* Varsayılan çevrimdışı modu */
+            transition: opacity 0.2s;
+        }
+
+        .member-item.online {
+            opacity: 1; /* Aktif olanlar parlayacak */
         }
 
         .member-avatar {
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             background: #262626;
             border: 1px solid #333;
+        }
+
+        /* Durum Belirteci Çizgisi */
+        .avatar-wrapper {
+            position: relative;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #747f8d; /* Çevrimdışı gri */
+            border: 2px solid #000;
+        }
+
+        .member-item.online .status-dot {
+            background-color: #3ba55d; /* Aktif yeşil */
         }
 
         .member-info {
@@ -252,11 +289,15 @@
         .member-name {
             font-size: 14px;
             font-weight: 600;
-            color: #fff;
         }
 
+        /* Özel Rol Renkleri */
+        .owner-style { color: #ed4245 !important; } /* Kırmızı */
+        .dev-style { color: #0095f6 !important; }   /* Mavi */
+        .online-style { color: #fff !important; }    /* Beyaz */
+
         .member-ig {
-            font-size: 12px;
+            font-size: 11px;
             color: #a8a8a8;
         }
     </style>
@@ -265,7 +306,7 @@
 
     <div class="login-container" id="loginScreen">
         <h1>RowTeam</h1>
-        <input type="text" class="login-input" id="igUsernameInput" placeholder="Instagram Kullanıcı Adı (Örn: @kullanici)">
+        <input type="text" class="login-input" id="igUsernameInput" placeholder="Kullanıcı Adı (Örn: UMUT ESAT)">
         <button class="login-btn" onclick="loginToChat()">Giriş Yap</button>
     </div>
 
@@ -287,7 +328,7 @@
         </div>
 
         <div class="members-section">
-            <div class="members-header">Aktif Üyeler</div>
+            <div class="members-header">Üyeler</div>
             <div class="members-list" id="membersList"></div>
         </div>
 
@@ -306,9 +347,7 @@
             let inputName = document.getElementById('igUsernameInput').value.trim();
             
             if (inputName !== "") {
-                if(!inputName.startsWith('@')) {
-                    inputName = '@' + inputName;
-                }
+                // Eğer harfleri büyük girmemişlerse formatı temizlemek adına olduğu gibi alıyoruz
                 currentUser = inputName;
 
                 document.getElementById('loginScreen').style.display = 'none';
@@ -317,7 +356,7 @@
 
                 initSocket();
             } else {
-                alert("Lütfen geçerli bir Instagram kullanıcı adı girin!");
+                alert("Lütfen geçerli bir kullanıcı adı girin!");
             }
         }
 
@@ -327,14 +366,13 @@
             }); 
 
             socket.on('connect', () => {
-                // Sunucuya odaya katıldığımızı ve ismimizi bildiriyoruz
                 socket.emit('join', { user: currentUser });
             });
 
-            // SUNUCUDAN GEÇMİŞ MESAJLARI ALMA (F5 atıldığında burası tetiklenir)
+            // MESAJ GEÇMİŞİ (F5 atıldığında veriler gitmez)
             socket.on('history', function(messages) {
                 const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = ''; // Temizle
+                chatMessages.innerHTML = ''; 
                 messages.forEach(data => {
                     if (data.user === currentUser) {
                         showLocalMessage(data.msg);
@@ -344,30 +382,86 @@
                 });
             });
 
-            // ANLIK YENİ MESAJ ALMA
             socket.on('message', function(data) {
-                // Eğer mesajı başkası gönderdiyse ekrana bas (Biz zaten basıyoruz)
                 if (data.user !== currentUser) {
                     showIncomingMessage(data.user, data.msg);
                 }
             });
 
-            // AKTİF ÜYE LİSTESİNİ GÜNCELLEME
-            socket.on('user_list', function(users) {
+            // DISCORD GÖRÜNÜMLÜ YETKİLİ VE AKTİF ÜYE LİSTELEME
+            socket.on('user_list', function(onlineUsers) {
                 const membersList = document.getElementById('membersList');
-                membersList.innerHTML = ''; // Listeyi sıfırla yeniden doldur
+                membersList.innerHTML = ''; // Temizle
 
-                users.forEach(user => {
-                    const isMe = (user === currentUser);
-                    const displayName = isMe ? "Sen" : user;
-                    
-                    const userRow = document.createElement('div');
-                    userRow.className = 'member-item';
-                    userRow.innerHTML = `
-                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}" class="member-avatar">
+                // Küçük/büyük harf uyumsuzluğu olmasın diye kontrol listesi
+                const onlineClean = onlineUsers.map(u => u.toUpperCase().replace('@','').trim());
+
+                // 1. OWNER KATEGORİSİ
+                const isOwnerOnline = onlineClean.includes("UMUT ESAT");
+                const ownerLabel = currentUser.toUpperCase() === "UMUT ESAT" ? "UMUT ESAT (Sen)" : "UMUT ESAT";
+                
+                const ownerDiv = document.createElement('div');
+                ownerDiv.innerHTML = `
+                    <div class="role-title">Owner — ${isOwnerOnline ? 1 : 0}</div>
+                    <div class="member-item ${isOwnerOnline ? 'online' : ''}">
+                        <div class="avatar-wrapper">
+                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=umutesat" class="member-avatar">
+                            <div class="status-dot"></div>
+                        </div>
                         <div class="member-info">
-                            <span class="member-name">${displayName}</span>
-                            <span class="member-ig">${user}</span>
+                            <span class="member-name owner-style">${ownerLabel}</span>
+                            <span class="member-ig">${isOwnerOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+                        </div>
+                    </div>
+                `;
+                membersList.appendChild(ownerDiv);
+
+                // 2. DEVELOPER KATEGORİSİ
+                const isDevOnline = onlineClean.includes("SİNTUV") || onlineClean.includes("SINTUV");
+                const devLabel = (currentUser.toUpperCase() === "SİNTUV" || currentUser.toUpperCase() === "SINTUV") ? "SİNTUV (Sen)" : "SİNTUV";
+
+                const devDiv = document.createElement('div');
+                devDiv.innerHTML = `
+                    <div class="role-title">Developer — ${isDevOnline ? 1 : 0}</div>
+                    <div class="member-item ${isDevOnline ? 'online' : ''}">
+                        <div class="avatar-wrapper">
+                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=sintuv" class="member-avatar">
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="member-info">
+                            <span class="member-name dev-style">${devLabel}</span>
+                            <span class="member-ig">${isDevOnline ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+                        </div>
+                    </div>
+                `;
+                membersList.appendChild(devDiv);
+
+                // 3. AKTİF ÜYELER KATEGORİSİ (Diğer herkes)
+                // Kurucular dışındaki gerçek çevrimiçi listesini filtrele
+                const normalUsers = onlineUsers.filter(u => {
+                    const up = u.toUpperCase().replace('@','').trim();
+                    return up !== "UMUT ESAT" && up !== "SİNTUV" && up !== "SINTUV";
+                });
+
+                const activeTitle = document.createElement('div');
+                activeTitle.className = 'role-title';
+                activeTitle.innerText = `Aktif Üyeler — ${normalUsers.length}`;
+                membersList.appendChild(activeTitle);
+
+                normalUsers.forEach(user => {
+                    const isMe = (user === currentUser);
+                    const displayName = isMe ? `${user} (Sen)` : user;
+
+                    const userRow = document.createElement('div');
+                    userRow.className = 'member-item online';
+                    userRow.innerHTML = `
+                        <div class="avatar-wrapper">
+                            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=${user}" class="member-avatar">
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="member-info">
+                            <span class="member-name online-style">${displayName}</span>
+                            <span class="member-ig">Çevrimiçi</span>
                         </div>
                     `;
                     membersList.appendChild(userRow);
@@ -386,7 +480,6 @@
             }
         }
 
-        // Kendi attığımız mesajı ekrana basma fonksiyonu
         function showLocalMessage(msg) {
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
@@ -401,7 +494,6 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Başkasından gelen mesajı ekrana basma fonksiyonu
         function showIncomingMessage(user, msg) {
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
