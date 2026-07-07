@@ -3,184 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spor Dünyası | Sağlıklı Yaşam ve Performans</title>
+    <title>Grup Chat | Instagram DM</title>
     <style>
-        /* Genel Stiller */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        /* Navigasyon / Menü */
-        header {
-            background-color: #111;
+            background-color: #000;
             color: #fff;
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-container {
-            width: 85%;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Yarım Kalan Logo ve Menü Tasarımı */
-        .logo h1 {
-            font-size: 24px;
-            color: #ff4a57;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-        }
-
-        .nav-links li {
-            margin-left: 25px;
-        }
-
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #ff4a57;
-        }
-
-        /* Ana Karşılama (Hero) Alanı */
-        .hero {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
-            height: 70vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            text-align: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Ana Panel */
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            background-color: #000;
+            border: 1px solid #262626;
+        }
+
+        /* SOL / ORTA: CHAT ALANI */
+        .chat-section {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #262626;
+            height: 100%;
+        }
+
+        /* Üst Bar (Grup Adı) */
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #262626;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Mesajların Listelendiği Yer */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Mesaj Yapısı */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 70%;
+        }
+
+        .message.incoming {
+            align-self: flex-start;
+        }
+
+        .message.outgoing {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .msg-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #333;
+            object-fit: cover;
+        }
+
+        .msg-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-size: 12px;
+            color: #a8a8a8;
+            margin-bottom: 4px;
+            margin-left: 2px;
+        }
+
+        .message.outgoing .username {
+            text-align: right;
+            margin-right: 2px;
+        }
+
+        .bubble {
+            padding: 10px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .incoming .bubble {
+            background-color: #262626;
             color: #fff;
-            padding: 0 20px;
         }
 
-        .hero-content h2 {
-            font-size: 48px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .hero-content p {
-            font-size: 20px;
-            margin-bottom: 30px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn {
-            display: inline-block;
-            background: #ff4a57;
+        .outgoing .bubble {
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
             color: #fff;
-            padding: 12px 35px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: background 0.3s ease, transform 0.2s;
         }
 
-        .btn:hover {
-            background: #e03d49;
-            transform: translateY(-2px);
+        /* Mesaj Yazma Alanı */
+        .chat-input-area {
+            padding: 20px;
+            background-color: #000;
         }
 
-        /* Özellikler / Kartlar Bölümü */
-        .features {
-            width: 85%;
-            margin: 60px auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #000;
+            border: 1px solid #262626;
+            border-radius: 24px;
+            padding: 8px 16px;
         }
 
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
+        .input-wrapper input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            padding: 6px 0;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .input-wrapper button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding-left: 10px;
         }
 
-        .card h3 {
-            margin-bottom: 15px;
-            color: #111;
+        .input-wrapper button:hover {
+            color: #fff;
         }
 
-        .card p {
-            color: #666;
-            font-size: 15px;
+        /* SAĞ TARAF: ÜYELER LİSTESİ */
+        .members-section {
+            flex: 1;
+            min-width: 250px;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .members-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #262626;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .members-list {
+            padding: 15px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            object-fit: cover;
+            border: 1px solid #262626;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .member-ig {
+            font-size: 12px;
+            color: #a8a8a8;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="nav-container">
-            <div class="logo">
-                <h1>Spor Dünyası</h1>
+    <div class="container">
+        
+        <!-- ORTA: CHAT BÖLÜMÜ -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <h2>Row Team Instagram Grubu 💬</h2>
             </div>
-            <ul class="nav-links">
-                <li><a href="#">Anasayfa</a></li>
-                <li><a href="#">Programlar</a></li>
-                <li><a href="#">Beslenme</a></li>
-                <li><a href="#">İletişim</a></li>
-            </ul>
-        </div>
-    </header>
+            
+            <!-- Mesaj Alanı -->
+            <div class="chat-messages" id="chatMessages">
+                
+                <!-- Örnek Gelen Mesaj -->
+                <div class="message incoming">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="msg-avatar" alt="avatar">
+                    <div class="msg-content">
+                        <span class="username">@ahmet_arslan</span>
+                        <div class="bubble">Selam beyler, akşam r0w team maçı var mı?</div>
+                    </div>
+                </div>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h2>Sınırlarını Zorla</h2>
-            <p>Sağlıklı bir yaşam, disiplinli antrenman ve doğru beslenme planlarıyla performansını zirveye taşı.</p>
-            <a href="#" class="btn">Hemen Başla</a>
-        </div>
-    </section>
+                <!-- Örnek Giden Mesaj -->
+                <div class="message outgoing">
+                    <div class="msg-content">
+                        <span class="username">@senin_adin</span>
+                        <div class="bubble">Aynen kanka, 20:00 gibi herkesi Discord'a bekliyorum.</div>
+                    </div>
+                </div>
 
-    <section class="features">
-        <div class="card">
-            <h3>Kişiye Özel Program</h3>
-            <p>Sizin hedeflerinize ve vücut yapınıza en uygun antrenman planları.</p>
-        </div>
-        <div class="card">
-            <h3>Doğru Beslenme</h3>
-            <p>Performansınızı destekleyecek, sürdürülebilir ve sağlıklı diyet listeleri.</p>
-        </div>
-        <div class="card">
-            <h3>7/24 Destek</h3>
-            <p>Gelişiminizi takip ediyor, sorularınızı anında yanıtlıyoruz.</p>
-        </div>
-    </section>
+            </div>
 
+            <!-- Mesaj Gönderme Girdisi -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Mesaj yaz...">
+                    <button onclick="sendMessage()">Gönder</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ: ÜYELER BÖLÜMÜ -->
+        <div class="members-section">
+            <div class="members-header">Üyeler (4)</div>
+            <div class="members-list">
+                
+                <!-- Üye 1 -->
+                <div class="member-item">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ahmet" class="member-avatar" alt="profil">
+                    <div class="member-info">
+                        <span class="member-name">Ahmet Arslan</span>
+                        <span class="member-ig">@ahmet_arslan</span>
+                    </div>
+                </div>
+
+                <!-- Üye 2 -->
+                <div class="member-item">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Ece" class="member-avatar" alt="profil">
+                    <div class="member-info">
+                        <span class="member-name">Ece Yılmaz</span>
+                        <span class="member-ig">@ece_ylmzz</span>
+                    </div>
+                </div>
+
+                <!-- Üye 3 -->
+                <div class="member-item">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Kaan" class="member-avatar" alt="profil">
+                    <div class="member-info">
+                        <span class="member-name">Kaan Demir</span>
+                        <span class="member-ig">@kaandmr_</span>
+                    </div>
+                </div>
+
+                <!-- Üye 4 (Sen) -->
+                <div class="member-item">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Sen" class="member-avatar" alt="profil">
+                    <div class="member-info">
+                        <span class="member-name">Sen</span>
+                        <span class="member-ig">@senin_adin</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Mesaj Gönderme Mekanizması -->
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageText = input.value.trim();
+            
+            if (messageText !== "") {
+                const chatMessages = document.getElementById('chatMessages');
+                
+                // Yeni mesaj elementi oluştur
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message outgoing';
+                
+                messageDiv.innerHTML = `
+                    <div class="msg-content">
+                        <span class="username">@senin_adin</span>
+                        <div class="bubble">${messageText}</div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                input.value = ""; // Kutuyu temizle
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Ekranı aşağı kaydır
+            }
+        }
+
+        // Enter tuşuna basınca da göndersin
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
 </body>
 </html>
